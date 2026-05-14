@@ -1,10 +1,10 @@
-name: Universal Downloader
+name: Download
 
 on:
   workflow_dispatch:
     inputs:
       url:
-        description: "Video/File URL"
+        description: "Enter video URL"
         required: true
 
 jobs:
@@ -18,19 +18,20 @@ jobs:
       - name: Install yt-dlp
         run: |
           python -m pip install --upgrade pip
-          pip install yt-dlp
+          pip install -U yt-dlp
 
       - name: Create download folder
-        run: mkdir -p downloads
+        run: mkdir downloads
 
       - name: Download media
         run: |
           yt-dlp \
+          --proxy "socks5://51.89.21.99:1080" \
           -o "downloads/%(title)s.%(ext)s" \
           "${{ github.event.inputs.url }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: downloaded-media
+          name: downloaded-files
           path: downloads/
