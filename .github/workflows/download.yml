@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        description: "Telegram public post URL"
+        description: "Telegram URL"
         required: true
 
 jobs:
@@ -14,16 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install gallery-dl
-        run: pip install gallery-dl
+      - name: Install yt-dlp
+        run: pip install yt-dlp
 
       - name: Download
         run: |
           mkdir downloads
-          gallery-dl -D downloads "${{ github.event.inputs.url }}"
+          yt-dlp "${{ github.event.inputs.url }}" -o "downloads/%(title)s.%(ext)s"
 
-      - name: Upload
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: telegram-files
+          name: telegram-download
           path: downloads/
