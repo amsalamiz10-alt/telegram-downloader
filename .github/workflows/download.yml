@@ -1,10 +1,10 @@
-name: Telegram Downloader
+name: Universal Downloader
 
 on:
   workflow_dispatch:
     inputs:
       url:
-        description: "Telegram URL"
+        description: "Video/File URL"
         required: true
 
 jobs:
@@ -12,18 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install yt-dlp
-        run: pip install yt-dlp
-
-      - name: Download
         run: |
-          mkdir downloads
-          yt-dlp "${{ github.event.inputs.url }}" -o "downloads/%(title)s.%(ext)s"
+          python -m pip install --upgrade pip
+          pip install yt-dlp
+
+      - name: Create download folder
+        run: mkdir -p downloads
+
+      - name: Download media
+        run: |
+          yt-dlp \
+          -o "downloads/%(title)s.%(ext)s" \
+          "${{ github.event.inputs.url }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: telegram-download
+          name: downloaded-media
           path: downloads/
