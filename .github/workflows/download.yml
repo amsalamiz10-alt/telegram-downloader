@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        description: "Direct file URL"
+        description: "Telegram public link"
         required: true
 
 jobs:
@@ -12,14 +12,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download file
+      - name: Install yt-dlp
+        run: |
+          pip install yt-dlp
+
+      - name: Download from Telegram
         run: |
           mkdir downloads
           cd downloads
-          wget "${{ github.event.inputs.url }}" -O downloaded_file
+          yt-dlp "${{ github.event.inputs.url }}"
 
       - name: Upload file
         uses: actions/upload-artifact@v4
         with:
-          name: downloaded-file
+          name: telegram-download
           path: downloads/
