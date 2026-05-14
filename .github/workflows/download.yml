@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        description: "Enter video URL"
+        description: "Enter URL"
         required: true
 
 jobs:
@@ -20,13 +20,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U yt-dlp
 
-      - name: Create download folder
+      - name: Create folder
         run: mkdir downloads
 
       - name: Download media
         run: |
           yt-dlp \
-          --proxy "socks5://51.89.21.99:1080" \
+          --no-check-certificates \
+          --geo-bypass \
           -o "downloads/%(title)s.%(ext)s" \
           "${{ github.event.inputs.url }}"
 
