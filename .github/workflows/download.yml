@@ -11,13 +11,12 @@ jobs:
   download:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
-      - name: Install Git LFS
-        run: |
-          git lfs install
 
       - name: Install yt-dlp
         run: |
@@ -34,18 +33,16 @@ jobs:
           -o "downloads/%(title)s.%(ext)s" \
           "${{ github.event.inputs.url }}"
 
-      - name: Track large files with Git LFS
+      - name: Get filename
+        id: file
         run: |
-          git lfs track "downloads/*"
-          git add .gitattributes
+          FILE=$(ls downloads | head -n 1)
+          echo "name=$FILE" >> $GITHUB_OUTPUT
 
-      - name: Commit downloaded file
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-
-          git add downloads/
-
-          git commit -m "Add downloaded media" || echo "Nothing to commit"
-
-          git push
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release-${{ github.run_id }}
+          name: Downloaded File
+          files: downloads/*
