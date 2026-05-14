@@ -22,27 +22,31 @@ jobs:
         run: |
           pip install -U yt-dlp
 
-      - name: Create download folder
+      - name: Create folders
         run: |
           mkdir -p downloads
+          mkdir -p split
 
       - name: Download media
         run: |
           yt-dlp \
           --no-playlist \
-          -o "downloads/%(title)s.%(ext)s" \
+          -o "downloads/video.%(ext)s" \
           "${{ github.event.inputs.url }}"
 
-      - name: Get filename
-        id: file
+      - name: Split large file
         run: |
-          FILE=$(ls downloads | head -n 1)
-          echo "name=$FILE" >> $GITHUB_OUTPUT
+          FILE=$(find downloads -type f | head -n 1)
 
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: release-${{ github.run_id }}
-          name: Downloaded File
-          files: downloads/*
+          split -b 95M "$FILE" split/part_
+
+      - name: Commit files
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+
+          git add split/
+
+          git commit -m "Add split files" || echo "Nothing to commit"
+
+          git push
