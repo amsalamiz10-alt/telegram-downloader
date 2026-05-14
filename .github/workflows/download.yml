@@ -1,0 +1,25 @@
+name: Telegram Downloader
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Direct file URL"
+        required: true
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download file
+        run: |
+          mkdir downloads
+          cd downloads
+          wget "${{ github.event.inputs.url }}" -O downloaded_file
+
+      - name: Upload file
+        uses: actions/upload-artifact@v4
+        with:
+          name: downloaded-file
+          path: downloads/
