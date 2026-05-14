@@ -11,8 +11,11 @@ jobs:
   download:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Install yt-dlp
@@ -20,19 +23,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U yt-dlp
 
-      - name: Create folder
-        run: mkdir downloads
+      - name: Create downloads folder
+        run: mkdir -p downloads
 
       - name: Download media
         run: |
           yt-dlp \
-          --no-check-certificates \
           --geo-bypass \
+          --no-check-certificates \
           -o "downloads/%(title)s.%(ext)s" \
           "${{ github.event.inputs.url }}"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: downloaded-files
-          path: downloads/
+      - name: Commit downloaded file
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add downloads/
+
+          git commit -m "Add downloaded media" || echo "Nothing to commit"
+
+          git push
