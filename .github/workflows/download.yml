@@ -1,43 +1,48 @@
-name: Download
+name: download
 
 on:
   workflow_dispatch:
     inputs:
       url:
-        description: "Enter URL"
+        description: "Video URL"
         required: true
 
 jobs:
   download:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Install Git LFS
+        run: |
+          git lfs install
+
       - name: Install yt-dlp
         run: |
-          python -m pip install --upgrade pip
           pip install -U yt-dlp
 
-      - name: Create downloads folder
-        run: mkdir -p downloads
+      - name: Create download folder
+        run: |
+          mkdir -p downloads
 
       - name: Download media
         run: |
           yt-dlp \
-          --geo-bypass \
-          --no-check-certificates \
+          --no-playlist \
           -o "downloads/%(title)s.%(ext)s" \
           "${{ github.event.inputs.url }}"
+
+      - name: Track large files with Git LFS
+        run: |
+          git lfs track "downloads/*"
+          git add .gitattributes
 
       - name: Commit downloaded file
         run: |
           git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+          git config --global user.email "actions@github.com"
 
           git add downloads/
 
